@@ -97,65 +97,130 @@
   - `requirements.txt`
 - Tested Flask app locally via `python3 app.py` on port `5000`.
 
-- ## ⏲️ Step 5: Crontab Automation
+---------------------------------------------------------------------
+# **Automation with Crontab**
+--------------------------------------------------------------------  
 
-To ensure the Flask application runs continuously and recovers automatically, a cron-based automation was set up.
+---
 
-### ✅ 1. Created Automation Script
+## **Verify Crontab & Install If Missing**  
+### **(Perform on the System Running Flask)**
+### **Check if Cron Service is Running**
+Run:  
+```bash
+sudo systemctl status cron
+```
+- If you see **Active: active (running)**, the cron service is running.
+- If **inactive (dead)**, start it using:
+  ```bash
+  sudo systemctl start cron
+  ```
+- Enable cron to start on boot:
+  ```bash
+  sudo systemctl enable cron
+  ```
 
-Wrote a shell script `start_flask.sh` in the home directory:
+### **If Cron is Not Installed**
+Install it using:  
+```bash
+sudo apt update && sudo apt install cron -y
+```
 
+---
+
+## **Create a Script to Call `/compute`**
+Instead of writing a direct `curl` command in `crontab`, it's a good practice to create a script.
+
+### **Create a New Shell Script**
+Run:
+```bash
+sudo nano home/ubuntu/flask_app/flask_env/compute.sh
+```
+Paste the following inside the file:
 ```bash
 #!/bin/bash
-cd /home/ubuntu/flask_app
-/usr/bin/python3 app.py >> flask_output.log 2>&1
+
+# Log file to store request responses
+LOG_FILE="/var/log/compute_cron.log"
+
+# Send request to Flask app and log output
+curl -X GET http://127.0.0.1:5000/compute >> $LOG_FILE 2>&1
 ```
+Save and exit (`CTRL+X`, then `Y`, then `ENTER`).
 
-Made the script executable:
-
+### **Make the Script Executable**
+Run:
 ```bash
-chmod +x start_flask.sh
+sudo chmod +x /opt/flask_app/compute.sh
 ```
 
-### ✅ 2. Tested the Script Manually
+---
 
-Ran it manually to verify the app launches:
+## **Schedule the Script in Crontab**
+Now, let's set up a **cron job** that executes this script **every minute**.
 
-```bash
-./start_flask.sh
-```
-
-Checked that Flask app was accessible on port 5000.
-
-### ✅ 3. Scheduled It with Crontab
-
-Opened crontab editor:
-
+### **Open Crontab**
+Run:
 ```bash
 crontab -e
 ```
+(If prompted to select an editor, choose **Nano**.)
 
-Added the following entry to run the script every 5 minutes (for testing purpose):
 
+### **Add the Following Line at the End**
 ```bash
-*/5 * * * * /home/ubuntu/start_flask.sh
+* * * * * sudo nano home/ubuntu/flask_app/flask_env/compute.sh
 ```
+Save and exit (`CTRL+X`, then `Y`, then `ENTER`).
 
-Redirected logs to `flask_output.log` for troubleshooting.
+---
 
-Verified cron was registered:
-
+## **Verify Crontab is Working**
+### **List the Scheduled Cron Jobs**
+Run:
 ```bash
 crontab -l
 ```
+Expected output:
+```bash
+* * * * * /opt/flask_app/request_compute.sh
+```
 
-### ✅ Outcome
+### **Check if the Script is Executing**
+Wait for a few minutes and check logs:
+```bash
+cat /var/log/compute_cron.log
+```
 
-Flask app auto-starts every 5 minutes.
+If you see output logs, **Crontab is working correctly!** 
 
-Helps in ensuring the app restarts if it stops for any reason.
+---
 
-Can later adjust frequency or integrate with a proper `systemd` service for production.
+🧪 Errors Faced & Troubleshooting
+
+| Issue | Cause | Resolution |
+|-------|-------|------------|
+| Jenkins service not starting | Port conflict or low memory | Switched to a better-resourced VMware VM |
+| Application deployment failed in Jenkins | Misconfigured Jenkinsfile and missing Docker dependencies | Not fully resolved due to time constraints |
+| Prometheus dashboard blank | Wrong port or missing node exporter | Installed `node_exporter` and configured target properly |
+
+---
+
+## 7. 🧹 Limitations & Next Steps
+
+- Jenkins app deployment failed — needs Docker image setup and a complete `Jenkinsfile`
+- Application logic and integration were not tested
 
 
 ---
+-----------------------------------------------------------------------------------------
+
+# **Conclusion**
+
+This DevOps Internship Challenge project served as a valuable hands-on experience in implementing modern DevOps practices. Despite certain limitations, such as performance issues with Proxmox and incomplete Jenkins pipeline execution, the project successfully demonstrated the manual provisioning of infrastructure, CI/CD pipeline setup using Jenkins, application deployment with Flask, and monitoring via Prometheus.
+
+By manually linking a Docker container with a VM instead of using Terraform, this setup provided deeper insights into networking, container communication, and configuration. Key DevOps principles like automation, scalability, and observability were implemented using real-world tools such as Jenkins, Prometheus, and Nginx.
+
+The foundational components are fully functional and ready to be expanded with enhancements like Docker-based deployment, Jenkinsfile integration, and production-ready app hosting. This journey also strengthened troubleshooting skills and provided an authentic simulation of deployment pipelines in constrained environments.
+
+
