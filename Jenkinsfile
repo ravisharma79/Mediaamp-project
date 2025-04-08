@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                git 'https://github.com/ravisharma79/your-flask-repo.git'
+                git 'https://github.com/ravisharma79/mediaamp-project.git'
             }
         }
 
