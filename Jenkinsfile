@@ -18,9 +18,12 @@ pipeline {
         }
 
         stage('Restart Flask App') {
-            steps {
-                sh 'sudo systemctl restart flask-app.service'
-            }
+    steps {
+        sh '''
+            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.100 'sudo systemctl restart flask-app.service'
+        '''
+    }
+}
         }
 
         stage('Hit Endpoint') {
