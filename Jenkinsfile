@@ -6,12 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/ravisharma79/mediaamp-project.git'
-            }
-        }
-
         stage('Set Up Virtualenv') {
             steps {
                 sh '''
