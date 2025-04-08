@@ -8,9 +8,9 @@ pipeline {
     stages {
         stage('Set Up Virtualenv') {
             steps {
-                sh '''
+                sh '''#!/bin/bash
                     python3 -m venv $VENV_DIR
-                    source $VENV_DIR/bin/activate
+                    . $VENV_DIR/bin/activate
                     pip install --upgrade pip
                     pip install -r requirement.txt
                 '''
