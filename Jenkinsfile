@@ -18,17 +18,16 @@ pipeline {
         }
 
         stage('Restart Flask App') {
-    steps {
-        sh '''
-            ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.100 'sudo systemctl restart flask-app.service'
-        '''
-    }
-}
+            steps {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@10.0.0.100 'sudo systemctl restart flask-app.service'
+                '''
+            }
         }
 
         stage('Hit Endpoint') {
             steps {
-                sh 'curl -s http://127.0.0.1:5000/ || true'
+                sh 'curl -s http://10.0.0.100/ || true'
             }
         }
     }
